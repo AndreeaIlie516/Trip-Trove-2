@@ -1,0 +1,35 @@
+{ 
+    "locations": [
+        {
+            "id": 1,
+            "name": "Madeira",
+            "country": "Portugal",
+            "description": "ala bala"
+        },
+        {
+            "id": 2,
+            "name": "Croatia",
+            "country": "Croatia",
+            "description": "ala bala"
+        }
+    ],
+    "destinations": [
+        {
+            "id": 1,
+            "name": "Vacanta in Madeira, 473 euro! (zbor + cazare 7 nopti)",
+            "location": "Madeira",
+            "country": "Portugal",
+            "image_url": "https://aventurescu.ro/wp-content/uploads/2021/10/madeira-8-1078x516.jpg",
+            "description": "Cea mai superba insula din Oceanul Atlantic",
+            "is_private": false
+        },
+        {
+            "id": 2,
+            "name": "Vacanta in Croatia, 262 euro! (zbor direct + cazare 7 nopti)",
+            "location": "Croatia",
+            "country": "Croatia",
+            "image_url": "https://aventurescu.ro/wp-content/uploads/2022/06/croatia-split-22-1078x516.jpg",
+            "is_private": false
+        }
+    ]
+}
