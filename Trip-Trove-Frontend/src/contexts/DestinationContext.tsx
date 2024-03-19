@@ -55,6 +55,21 @@ export const DestinationProvider: React.FC<IDestinationProviderProps> = ({
       }
   }
 
+  const addDestination = async (destination: IDestination) => {
+    try {
+      const response = await fetch(destinationUrl, {
+        method: 'POST',
+        body: JSON.stringify(destination)
+      })
+      if (!response.ok) {
+        throw new Error('could not add destination');
+      }
+      await fetchDestinations();
+    } catch (error: unknown) {
+      console.log('error');
+    }
+  }
+
   const deleteDestination = async (id: number) => {
     console.log(`delete called for destination ${id}`)
     try {
@@ -70,8 +85,24 @@ export const DestinationProvider: React.FC<IDestinationProviderProps> = ({
     }
   }
 
+  const updateDestination = async (destination: IDestination) => {
+    try {
+      const response = await fetch(`${destinationUrl}/${destination.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(destination)
+      })
+      if (!response.ok) {
+        throw new Error('could not update destination');
+      }
+      await fetchDestinations();
+    } catch (err: unknown) {
+      console.log('error');
+    }
+  }
+
+
   return (
-    <DestinationContext.Provider value={{ destinations, getDestinationById, deleteDestination }}>
+    <DestinationContext.Provider value={{ destinations, getDestinationById, addDestination, deleteDestination, updateDestination }}>
       {children}
     </DestinationContext.Provider>
   );

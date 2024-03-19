@@ -2,7 +2,7 @@ import * as React from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import ResponsiveAppBar from "./ResponsiveAppBar";
-import DestinationGrid from "./DestinationGrid";
+import { DestinationGrid } from "./DestinationGrid";
 import Footer from "./Footer";
 import background from "../assets/view_background.jpeg";
 
@@ -11,7 +11,7 @@ const GridTemplateAreas: React.FC = () => {
     <Box
       sx={{
         width: "100vw",
-        minHeight: "100vh"
+        minHeight: "100vh",
       }}
     >
       <Box

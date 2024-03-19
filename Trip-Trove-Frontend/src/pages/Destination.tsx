@@ -1,20 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import ResponsiveAppBar from "../components/ResponsiveAppBar";
 import Footer from "../components/Footer";
 import { Box, Typography, Divider } from "@mui/material";
 import { IDestination } from "../interfaces/Destination";
-import { ILocation } from "../interfaces/Location";
 import { useDestinations } from "../contexts/DestinationContext";
-import { useLocations } from "../contexts/LocationContext";
 
 export function Destination() {
   const { id } = useParams<{ id: string }>();
   const { getDestinationById } = useDestinations();
-  const { getLocationById } = useLocations();
   const [destination, setDestination] = useState<IDestination | undefined>();
-  const [location, setLocation] = useState<ILocation | undefined>();
-  const nav = useNavigate();
 
   useEffect(() => {
     const fetchDestinationDetails = async () => {
@@ -25,24 +20,9 @@ export function Destination() {
       setDestination(fetchedDestination);
     };
     fetchDestinationDetails();
-    console.log(destination)
-
-    const fetchLocationDetails = async () => {
-      if (!destination) {
-        return null;
-      }
-      if (!destination.location_id) {
-        return null;
-      }
-      const fetchedLocation = await getLocationById(destination.location_id);
-      setLocation(fetchedLocation);
-    };
-    fetchLocationDetails();
-    console.log(location)
-
   });
 
-  if (!destination || !location) {
+  if (!destination) {
     return (
       <Typography variant="h4" align="center">
         Loading...
@@ -96,16 +76,19 @@ export function Destination() {
             >
               {destination.name}
             </Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Typography variant="h6" component="h3" sx={{ mb: 1 }}>
-              Location: {location.name}
-            </Typography>
-            <Typography variant="subtitle1" component="h3" sx={{ mb: 1 }}>
-              Country: {location.country}
+            <Typography variant="body1" sx={{ mb: 2 }}>
+              {"Location:  " + destination.location}
             </Typography>
             <Typography variant="body1" sx={{ mb: 2 }}>
-              {destination.description}
+              {"Country:  " + destination.country}
             </Typography>
+            <Typography variant="body1" sx={{ mb: 2 }}>
+              {"Visitors last year:  " + destination.visitors_last_year}
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 2 }}>
+              {"Description:  " + destination.description}
+            </Typography>
+            
           </Box>
         </Box>
         <Footer />
