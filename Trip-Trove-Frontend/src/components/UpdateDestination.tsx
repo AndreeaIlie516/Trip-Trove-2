@@ -77,6 +77,15 @@ export function UpdateDestination() {
       <TextField
         margin="normal"
         fullWidth
+        label="Visistors last year"
+        name="visitors_last_year"
+        type="number"
+        value={destination.visitors_last_year}
+        onChange={handleChange}
+      />
+      <TextField
+        margin="normal"
+        fullWidth
         label="Image Url"
         name="image_url"
         value={destination.image_url}

@@ -57,7 +57,7 @@ const CustomChart: React.FC<CustomChartProps> = ({ data, options }) => {
 
 function sortDestinations(
   destinations: IDestination[],
-  sortOrder: "recommended" | "asc" | "desc"
+  sortOrder: "asc" | "desc" | "recommended"
 ): IDestination[] {
   switch (sortOrder) {
     case "asc":
@@ -70,17 +70,19 @@ function sortDestinations(
       );
     case "recommended":
     default:
-      return destinations;
+      return [...destinations].sort(
+        (a, b) => a.visitors_last_year - b.visitors_last_year
+      );
   }
 }
 
 export function DestinationGrid() {
   const [page, setPage] = useState(1);
-  const itemsPerPage = 6;
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   const [open, setOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [sortOrder, setSortOrder] = useState<"recommended" | "asc" | "desc">(
-    "recommended"
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "recommended">(
+    "asc"
   );
 
   const { destinations, deleteDestination } = useDestinations();
@@ -109,6 +111,12 @@ export function DestinationGrid() {
     setOpen(false);
   };
 
+  const handleItemsPerPageChange = (event: SelectChangeEvent<string>) => {
+    const value = event.target.value;
+    setItemsPerPage(parseInt(value, 10));
+    setPage(1);
+  };
+
   const handleChangePage = (
     event: React.ChangeEvent<unknown>,
     value: number
@@ -124,27 +132,42 @@ export function DestinationGrid() {
   const currentDestinations = useMemo(() => {
     const start = (page - 1) * itemsPerPage;
     return sortedDestinations.slice(start, start + itemsPerPage);
-  }, [page, sortedDestinations]);
+  }, [page, sortedDestinations, itemsPerPage]);
 
   const handleSortChange = (
-    event: SelectChangeEvent<"recommended" | "asc" | "desc">
+    event: SelectChangeEvent<"asc" | "desc" | "recommended">
   ) => {
-    setSortOrder(event.target.value as "recommended" | "asc" | "desc");
+    setSortOrder(event.target.value as "asc" | "desc" | "recommended");
     setPage(1);
   };
 
-  const chartData: ChartData = {
-    labels: currentDestinations.map((destination) => destination.name),
-    datasets: [
-      {
-        label: "Visitors Last Year",
-        data: currentDestinations.map(
-          (destination) => destination.visitors_last_year
-        ),
-        backgroundColor: "rgba(53, 162, 235, 0.5)",
-      },
-    ],
-  };
+  const chartData: ChartData = useMemo(() => {
+    const visitorsCount: Record<number, number> = {};
+    destinations.forEach((destination) => {
+      const visitors = destination.visitors_last_year;
+      if (visitorsCount[visitors]) {
+        visitorsCount[visitors] += 1;
+      } else {
+        visitorsCount[visitors] = 1;
+      }
+    });
+
+    const labels = Object.keys(visitorsCount).map(
+      (visitors) => `${visitors} visitors`
+    );
+    const data = Object.values(visitorsCount);
+
+    return {
+      labels: labels,
+      datasets: [
+        {
+          label: "Number of Destinations",
+          data: data,
+          backgroundColor: "rgba(53, 162, 235, 0.5)",
+        },
+      ],
+    };
+  }, [destinations]);
 
   const chartOptions: ChartOptions = {
     responsive: true,
@@ -257,6 +280,20 @@ export function DestinationGrid() {
           page={page}
           onChange={handleChange}
         />
+        <FormControl style={{ marginTop: "20px", width: "70px" }}>
+          <Select
+            labelId="items-per-page-label"
+            id="items-per-page-select"
+            value={itemsPerPage.toString()}
+            label="Items Per Page"
+            onChange={handleItemsPerPageChange}
+          >
+            <MenuItem value={5}>5</MenuItem>
+            <MenuItem value={10}>10</MenuItem>
+            <MenuItem value={15}>15</MenuItem>
+            <MenuItem value={20}>20</MenuItem>
+          </Select>
+        </FormControl>
       </Box>
 
       <Dialog

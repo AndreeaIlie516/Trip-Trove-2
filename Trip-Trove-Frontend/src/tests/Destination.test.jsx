@@ -4,9 +4,7 @@ import '@testing-library/jest-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { Destination } from '../pages/Destination';
 import * as DestinationContext from '../contexts/DestinationContext';
-import * as LocationContext from '../contexts/LocationContext';
 
-// Mock hooks
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   useParams: () => ({ id: '1' }),

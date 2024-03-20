@@ -16,7 +16,7 @@
   "destinations": [
     {
       "id": "1",
-      "name": "Vacanta in Madeira, 473 euro! (zbor + cazare 7 nopti)aaaa",
+      "name": "Vacanta in Madeira, 473 euro! (zbor + cazare 7 nopti)",
       "location": "Funchal",
       "country": "Madeira",
       "visitors_last_year": 4000,
@@ -87,7 +87,7 @@
       "name": "Vacanta in Umbria, 136 euro! (zbor + cazare 4 nopti)",
       "location": "Umbria",
       "country": "Italia",
-      "visitors_last_year": 3000,
+      "visitors_last_year": "3000",
       "image_url": "https://aventurescu.ro/wp-content/uploads/2022/07/spello-umbria-1078x516.jpg",
       "description": "Ala Bala",
       "is_private": false
@@ -107,7 +107,7 @@
       "name": "Primavara in Salonic, 103 euro! (zbor + cazare 3 nopti)",
       "location": "Croatia",
       "country": "Croatia",
-      "visitors_last_year": 70000,
+      "visitors_last_year": "100000",
       "image_url": "https://aventurescu.ro/wp-content/uploads/2023/06/salonic-444-702x336.jpg",
       "description": "Ala Bala",
       "is_private": false
