@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useDestinations } from "../contexts/DestinationContext";
+import { IDestination } from "../interfaces/Destination";
 import {
   Table,
   TableContainer,
@@ -24,13 +25,63 @@ import {
   InputLabel,
   SelectChangeEvent,
 } from "@mui/material";
+import { Chart, ChartData, ChartOptions } from "chart.js/auto";
+
+interface CustomChartProps {
+  data: ChartData;
+  options?: ChartOptions;
+}
+
+const CustomChart: React.FC<CustomChartProps> = ({ data, options }) => {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    if (canvasRef.current) {
+      const ctx = canvasRef.current.getContext("2d");
+      if (ctx) {
+        const chartInstance = new Chart(ctx, {
+          type: "bar",
+          data: data,
+          options: options,
+        });
+
+        return () => {
+          chartInstance.destroy();
+        };
+      }
+    }
+  }, [data, options]);
+
+  return <canvas ref={canvasRef} />;
+};
+
+function sortDestinations(
+  destinations: IDestination[],
+  sortOrder: "recommended" | "asc" | "desc"
+): IDestination[] {
+  switch (sortOrder) {
+    case "asc":
+      return [...destinations].sort(
+        (a, b) => a.visitors_last_year - b.visitors_last_year
+      );
+    case "desc":
+      return [...destinations].sort(
+        (a, b) => b.visitors_last_year - a.visitors_last_year
+      );
+    case "recommended":
+    default:
+      return destinations;
+  }
+}
 
 export function DestinationGrid() {
   const [page, setPage] = useState(1);
   const itemsPerPage = 6;
   const [open, setOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [sortOrder, setSortOrder] = useState<"recommended" | "asc" | "desc">(
+    "recommended"
+  );
 
   const { destinations, deleteDestination } = useDestinations();
 
@@ -58,24 +109,51 @@ export function DestinationGrid() {
     setOpen(false);
   };
 
-  const handleSortChange = (event: SelectChangeEvent<"asc" | "desc">) => {
-    setSortOrder(event.target.value as "asc" | "desc");
+  const handleChangePage = (
+    event: React.ChangeEvent<unknown>,
+    value: number
+  ) => {
+    setPage(value);
   };
 
-  const sortedDestinations = useMemo(() => {
-    return [...destinations].sort((a, b) => {
-      if (sortOrder === "asc") {
-        return a.visitors_last_year - b.visitors_last_year;
-      } else {
-        return b.visitors_last_year - a.visitors_last_year;
-      }
-    });
-  }, [destinations, sortOrder]);
-
-  const currentDestinations = destinations.slice(
-    (page - 1) * itemsPerPage,
-    page * itemsPerPage
+  const sortedDestinations = useMemo(
+    () => sortDestinations(destinations, sortOrder),
+    [destinations, sortOrder]
   );
+
+  const currentDestinations = useMemo(() => {
+    const start = (page - 1) * itemsPerPage;
+    return sortedDestinations.slice(start, start + itemsPerPage);
+  }, [page, sortedDestinations]);
+
+  const handleSortChange = (
+    event: SelectChangeEvent<"recommended" | "asc" | "desc">
+  ) => {
+    setSortOrder(event.target.value as "recommended" | "asc" | "desc");
+    setPage(1);
+  };
+
+  const chartData: ChartData = {
+    labels: currentDestinations.map((destination) => destination.name),
+    datasets: [
+      {
+        label: "Visitors Last Year",
+        data: currentDestinations.map(
+          (destination) => destination.visitors_last_year
+        ),
+        backgroundColor: "rgba(53, 162, 235, 0.5)",
+      },
+    ],
+  };
+
+  const chartOptions: ChartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "top",
+      },
+    },
+  };
 
   return (
     <>
@@ -95,10 +173,12 @@ export function DestinationGrid() {
           label="Sort Order"
           onChange={handleSortChange}
         >
+          <MenuItem value="recommended">Recommended</MenuItem>
           <MenuItem value="asc">Ascending</MenuItem>
           <MenuItem value="desc">Descending</MenuItem>
         </Select>
       </FormControl>
+
       <TableContainer component={Paper}>
         <Table aria-label="simple table">
           <TableHead>
@@ -112,7 +192,7 @@ export function DestinationGrid() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {sortedDestinations.map((destination) => (
+            {currentDestinations.map((destination) => (
               <TableRow key={destination.id}>
                 <TableCell>{destination.name}</TableCell>
                 <TableCell>{destination.location}</TableCell>
@@ -143,7 +223,7 @@ export function DestinationGrid() {
                   </Button>
                   <Button
                     color="error"
-                    onClick={() => handleClickOpen(destination.id)}
+                    onClick={() => handleClickOpen(parseInt(destination.id))}
                   >
                     Delete
                   </Button>
@@ -153,6 +233,18 @@ export function DestinationGrid() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Box
+        sx={{
+          width: "100%",
+          height: "400px",
+          marginTop: "40px",
+          marginBottom: "20px",
+        }}
+      >
+        <CustomChart data={chartData} options={chartOptions} />
+      </Box>
+
       <Box
         sx={{
           display: "flex",
@@ -161,7 +253,7 @@ export function DestinationGrid() {
         }}
       >
         <Pagination
-          count={Math.ceil(destinations.length / itemsPerPage)}
+          count={Math.ceil(sortedDestinations.length / itemsPerPage)}
           page={page}
           onChange={handleChange}
         />

@@ -29,7 +29,7 @@ describe('Destination Component loading', () => {
 jest.mock('../contexts/DestinationContext', () => ({
     useDestinations: () => ({
       getDestinationById: jest.fn().mockResolvedValue({
-        id: 1,
+        id: "1",
         name: 'Eiffel Tower',
         location: 'Paris',
         country: 'France',

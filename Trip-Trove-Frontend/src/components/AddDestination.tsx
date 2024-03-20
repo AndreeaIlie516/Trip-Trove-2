@@ -5,10 +5,10 @@ import { useDestinations } from "../contexts/DestinationContext";
 import { useNavigate } from "react-router-dom";
 
 export function AddDestination() {
-  const { addDestination } = useDestinations();
+  const { addDestination, destinations } = useDestinations();
   const navigate = useNavigate();
   const [destination, setDestination] = useState<IDestination>({
-    id: 0,
+    id: "",
     name: "",
     location: "",
     country: "",
@@ -20,7 +20,7 @@ export function AddDestination() {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    destination.id = Math.floor(Math.random() * 100);
+    destination.id = (destinations.length + 1).toString();
     console.log(destination);
     addDestination(destination);
     navigate("/destinations");
