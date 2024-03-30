@@ -29,7 +29,7 @@
       "name": "Vacanta in Croatia, 262 euro! (zbor direct + cazare 7 nopti)",
       "location": "Dubrovnik",
       "country": "Croatia",
-      "visitors_last_year": 100000,
+      "visitors_last_year": "3000",
       "image_url": "https://aventurescu.ro/wp-content/uploads/2022/06/croatia-split-22-1078x516.jpg",
       "description": "Ala Bala",
       "is_private": false
@@ -57,7 +57,7 @@
       "name": "Vacanta in Santorini, 356 euro! (zbor + cazare 7 nopti)",
       "location": "Santorini",
       "country": "Grecia",
-      "visitors_last_year": 100000,
+      "visitors_last_year": "120000",
       "image_url": "https://aventurescu.ro/wp-content/uploads/2023/06/santorini-455-702x336.jpg",
       "description": "Ala Bala",
       "is_private": false
@@ -77,7 +77,7 @@
       "name": "City break de primavara la Viena, 138 euro! (zbor + cazare 3 nopti)",
       "location": "Viena",
       "country": "Austria",
-      "visitors_last_year": 100000,
+      "visitors_last_year": "70000",
       "image_url": "https://aventurescu.ro/wp-content/uploads/2022/01/viena23-1078x516.jpg",
       "description": "Ala Bala",
       "is_private": false
@@ -107,7 +107,7 @@
       "name": "Primavara in Salonic, 103 euro! (zbor + cazare 3 nopti)",
       "location": "Croatia",
       "country": "Croatia",
-      "visitors_last_year": "100000",
+      "visitors_last_year": "120000",
       "image_url": "https://aventurescu.ro/wp-content/uploads/2023/06/salonic-444-702x336.jpg",
       "description": "Ala Bala",
       "is_private": false

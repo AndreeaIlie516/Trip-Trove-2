@@ -1,10 +1,10 @@
 import { ReactNode } from "react";
-import { IDestination } from "./Destination";
+import { IDestination, IDestinationServer } from "./Destination";
 
 export interface IDestinationContext {
   destinations: IDestination[];
   getDestinationById: (id: number) => Promise<IDestination | undefined>;
-  addDestination: (destination: IDestination) => void;
+  addDestination: (destination: IDestinationServer) => void;
   deleteDestination: (id: number) => void;
   updateDestination: (destination: IDestination) => void;
 }

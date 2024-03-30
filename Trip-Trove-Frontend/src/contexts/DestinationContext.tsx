@@ -3,7 +3,7 @@ import {
   IDestinationContext,
   IDestinationProviderProps,
 } from "../interfaces/DestinationContext";
-import { IDestination } from "../interfaces/Destination";
+import { IDestination, IDestinationServer } from "../interfaces/Destination";
 import baseUrl from "../consts";
 
 const DestinationContext = createContext<IDestinationContext | undefined>(
@@ -42,67 +42,77 @@ export const DestinationProvider: React.FC<IDestinationProviderProps> = ({
     fetchDestinations();
   }, []);
 
-  const getDestinationById = async (id: number): Promise<IDestination | undefined> => {
+  const getDestinationById = async (
+    id: number
+  ): Promise<IDestination | undefined> => {
     try {
-        const response = await fetch(`${destinationUrl}/${id}`);
-        if (!response.ok) {
-          throw new Error('could not find destination by id');
-        }
-        const data = await response.json() as IDestination;
-        return data;
-      } catch (err: unknown) {
-        console.log(`error`);
+      const response = await fetch(`${destinationUrl}/${id}`);
+      if (!response.ok) {
+        throw new Error("could not find destination by id");
       }
-  }
+      const data = (await response.json()) as IDestination;
+      return data;
+    } catch (err: unknown) {
+      console.log(`error`);
+    }
+  };
 
-  const addDestination = async (destination: IDestination) => {
+  const addDestination = async (destination: IDestinationServer) => {
+    console.log(JSON.stringify(destination));
     try {
       const response = await fetch(destinationUrl, {
-        method: 'POST',
-        body: JSON.stringify(destination)
-      })
+        method: "POST",
+        body: JSON.stringify(destination),
+      });
       if (!response.ok) {
-        throw new Error('could not add destination');
+        throw new Error("could not add destination");
       }
       await fetchDestinations();
     } catch (error: unknown) {
-      console.log('error');
+      console.log("error");
     }
-  }
+  };
 
   const deleteDestination = async (id: number) => {
-    console.log(`delete called for destination ${id}`)
+    console.log(`delete called for destination ${id}`);
     try {
       const response = await fetch(`${destinationUrl}/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
-      if(!response.ok) {
-        throw new Error('cannot delete destination');
+      if (!response.ok) {
+        throw new Error("cannot delete destination");
       }
       await fetchDestinations();
     } catch (err: unknown) {
       console.log(`error`);
     }
-  }
+  };
 
   const updateDestination = async (destination: IDestination) => {
     try {
-      const response = await fetch(`${destinationUrl}/${destination.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(destination)
-      })
+      const response = await fetch(`${destinationUrl}/${destination.ID}`, {
+        method: "PUT",
+        body: JSON.stringify(destination),
+      });
       if (!response.ok) {
-        throw new Error('could not update destination');
+        throw new Error("could not update destination");
       }
       await fetchDestinations();
     } catch (err: unknown) {
-      console.log('error');
+      console.log("error");
     }
-  }
-
+  };
 
   return (
-    <DestinationContext.Provider value={{ destinations, getDestinationById, addDestination, deleteDestination, updateDestination }}>
+    <DestinationContext.Provider
+      value={{
+        destinations,
+        getDestinationById,
+        addDestination,
+        deleteDestination,
+        updateDestination,
+      }}
+    >
       {children}
     </DestinationContext.Provider>
   );

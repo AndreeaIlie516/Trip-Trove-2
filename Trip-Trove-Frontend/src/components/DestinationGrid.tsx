@@ -216,7 +216,7 @@ export function DestinationGrid() {
           </TableHead>
           <TableBody>
             {currentDestinations.map((destination) => (
-              <TableRow key={destination.id}>
+              <TableRow key={destination.ID}>
                 <TableCell>{destination.name}</TableCell>
                 <TableCell>{destination.location}</TableCell>
                 <TableCell>{destination.country}</TableCell>
@@ -232,21 +232,21 @@ export function DestinationGrid() {
                 <TableCell>
                   <Button
                     component={Link}
-                    to={`/destinations/${destination.id}`}
+                    to={`/destinations/${destination.ID}`}
                     style={{ textDecoration: "none", color: "inherit" }}
                   >
                     view details
                   </Button>
                   <Button
                     component={Link}
-                    to={`/destinations/update/${destination.id}`}
+                    to={`/destinations/update/${destination.ID}`}
                     style={{ textDecoration: "none", color: "inherit" }}
                   >
                     Update
                   </Button>
                   <Button
                     color="error"
-                    onClick={() => handleClickOpen(parseInt(destination.id))}
+                    onClick={() => handleClickOpen(parseInt(destination.ID))}
                   >
                     Delete
                   </Button>
@@ -275,25 +275,36 @@ export function DestinationGrid() {
           marginTop: "2.2em",
         }}
       >
-        <Pagination
-          count={Math.ceil(sortedDestinations.length / itemsPerPage)}
-          page={page}
-          onChange={handleChange}
-        />
-        <FormControl style={{ marginTop: "20px", width: "70px" }}>
-          <Select
-            labelId="items-per-page-label"
-            id="items-per-page-select"
-            value={itemsPerPage.toString()}
-            label="Items Per Page"
-            onChange={handleItemsPerPageChange}
-          >
-            <MenuItem value={5}>5</MenuItem>
-            <MenuItem value={10}>10</MenuItem>
-            <MenuItem value={15}>15</MenuItem>
-            <MenuItem value={20}>20</MenuItem>
-          </Select>
-        </FormControl>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: "2.2em",
+            padding: "0 20px",
+          }}
+        >
+          <Pagination
+            count={Math.ceil(sortedDestinations.length / itemsPerPage)}
+            page={page}
+            onChange={handleChange}
+            sx={{ marginRight: "20px" }}
+          />
+          <FormControl sx={{ width: "auto" }}>
+            <Select
+              labelId="items-per-page-label"
+              id="items-per-page-select"
+              value={itemsPerPage.toString()}
+              label="Items Per Page"
+              onChange={handleItemsPerPageChange}
+            >
+              <MenuItem value={5}>5</MenuItem>
+              <MenuItem value={10}>10</MenuItem>
+              <MenuItem value={15}>15</MenuItem>
+              <MenuItem value={20}>20</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
       </Box>
 
       <Dialog

@@ -50,6 +50,7 @@ describe('All destinations', () => {
         userEvent.click(paginationButton);
         expect(screen.getByText('Place A')).toBeInTheDocument(); 
     });
+    
     test('opens dialog and confirms destination deletion', async () => {
         render(<DestinationGrid />, { wrapper: BrowserRouter });
         const deleteButton = screen.getAllByText('Delete')[0];

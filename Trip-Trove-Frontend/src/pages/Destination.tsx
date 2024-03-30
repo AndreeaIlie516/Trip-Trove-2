@@ -20,7 +20,10 @@ export function Destination() {
       setDestination(fetchedDestination);
     };
     fetchDestinationDetails();
-  });
+  }, []);
+
+  console.log("ID: " + id);
+  console.log("Destination:" + destination?.ID + " " + destination?.country);
 
   if (!destination) {
     return (
@@ -88,7 +91,6 @@ export function Destination() {
             <Typography variant="body1" sx={{ mb: 2 }}>
               {"Description:  " + destination.description}
             </Typography>
-            
           </Box>
         </Box>
         <Footer />

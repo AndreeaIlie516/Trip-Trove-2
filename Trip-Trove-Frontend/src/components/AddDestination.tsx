@@ -1,14 +1,13 @@
 import { useState } from "react";
 import { Button, TextField } from "@mui/material";
-import { IDestination } from "../interfaces/Destination";
+import { IDestinationServer } from "../interfaces/Destination";
 import { useDestinations } from "../contexts/DestinationContext";
 import { useNavigate } from "react-router-dom";
 
 export function AddDestination() {
   const { addDestination, destinations } = useDestinations();
   const navigate = useNavigate();
-  const [destination, setDestination] = useState<IDestination>({
-    id: "",
+  const [destination, setDestination] = useState<IDestinationServer>({
     name: "",
     location: "",
     country: "",
@@ -20,7 +19,6 @@ export function AddDestination() {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    destination.id = (destinations.length + 1).toString();
     console.log(destination);
     addDestination(destination);
     navigate("/destinations");
@@ -30,7 +28,7 @@ export function AddDestination() {
     const { name, value } = event.target;
     setDestination((prevDestination) => ({
       ...prevDestination,
-      [name]: name === "age" ? parseInt(value, 10) : value,
+      [name]: name === "visitors_last_year" ? parseInt(value, 10) : value,
     }));
   };
 

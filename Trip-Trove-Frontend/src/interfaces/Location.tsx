@@ -1,5 +1,5 @@
 export interface ILocation {
-    id: number,
+    ID: number,
     name: string,
     country?: string,
     description?: string,
