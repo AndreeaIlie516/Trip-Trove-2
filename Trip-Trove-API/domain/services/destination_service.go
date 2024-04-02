@@ -7,9 +7,19 @@ import (
 	"fmt"
 )
 
+type IDestinationService interface {
+	AllDestinations() ([]entities.Destination, error)
+	DestinationByID(idStr string) (*entities.Destination, error)
+	CreateDestination(destination entities.Destination) (entities.Destination, error)
+	UpdateDestination(idStr string, updatedDestination entities.Destination) (entities.Destination, error)
+	DeleteDestination(idStr string) (entities.Destination, error)
+}
+
 type DestinationService struct {
 	Repo repositories.DestinationRepository
 }
+
+var _ IDestinationService = &DestinationService{}
 
 func (service *DestinationService) AllDestinations() ([]entities.Destination, error) {
 	destinations, err := service.Repo.AllDestinations()

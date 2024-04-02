@@ -3,83 +3,68 @@ package dataaccess
 import (
 	"Trip-Trove-API/domain/entities"
 	"errors"
-	"gorm.io/gorm"
+	"sync"
 )
 
-type GormDestinationRepository struct {
-	Db *gorm.DB
+type InMemoryDestinationRepository struct {
+	destinations []entities.Destination
+	mu           sync.RWMutex
 }
 
-func NewGormDestinationRepository(db *gorm.DB) *GormDestinationRepository {
-	return &GormDestinationRepository{Db: db}
+func NewInMemoryDestinationRepository() *InMemoryDestinationRepository {
+	return &InMemoryDestinationRepository{}
 }
 
-func (r *GormDestinationRepository) AllDestinations() ([]entities.Destination, error) {
-	var destinations []entities.Destination
-	result := r.Db.Find(&destinations)
-	return destinations, result.Error
+func (r *InMemoryDestinationRepository) AllDestinations() ([]entities.Destination, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	return r.destinations, nil
 }
 
-func (r *GormDestinationRepository) AllDestinationIDs() ([]uint, error) {
-	var destinationIDs []uint
+func (r *InMemoryDestinationRepository) DestinationByID(id uint) (*entities.Destination, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 
-	if err := r.Db.Model(&entities.Destination{}).Select("ID").Find(&destinationIDs).Error; err != nil {
-		return nil, err
-	}
-
-	return destinationIDs, nil
-}
-
-func (r *GormDestinationRepository) DestinationByID(id uint) (*entities.Destination, error) {
-	var destination entities.Destination
-
-	if err := r.Db.First(&destination, "ID = ?", id).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("destination not found")
+	for i, destination := range r.destinations {
+		if destination.ID == id {
+			return &r.destinations[i], nil
 		}
-		return nil, err
 	}
 
-	return &destination, nil
+	return nil, errors.New("destination not found")
 }
 
-func (r *GormDestinationRepository) CreateDestination(destination entities.Destination) (entities.Destination, error) {
-	if err := r.Db.Create(&destination).Error; err != nil {
-		return entities.Destination{}, err
-	}
+func (r *InMemoryDestinationRepository) CreateDestination(destination entities.Destination) (entities.Destination, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	destination.ID = uint(len(r.destinations) + 1)
+	r.destinations = append(r.destinations, destination)
 	return destination, nil
 }
 
-func (r *GormDestinationRepository) DeleteDestination(id uint) (entities.Destination, error) {
-	var destination entities.Destination
+func (r *InMemoryDestinationRepository) DeleteDestination(id uint) (entities.Destination, error) {
+	defer r.mu.Unlock()
 
-	if err := r.Db.First(&destination, "ID = ?", id).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return entities.Destination{}, errors.New("destination not found")
+	for i, destination := range r.destinations {
+		if destination.ID == id {
+			r.destinations = append(r.destinations[:i], r.destinations[i+1:]...)
+			return destination, nil
 		}
-		return entities.Destination{}, err
 	}
-
-	if err := r.Db.Delete(&destination).Error; err != nil {
-		return entities.Destination{}, err
-	}
-
-	return destination, nil
+	return entities.Destination{}, errors.New("destination not found")
 }
 
-func (r *GormDestinationRepository) UpdateDestination(id uint, updatedDestination entities.Destination) (entities.Destination, error) {
-	var destination entities.Destination
+func (r *InMemoryDestinationRepository) UpdateDestination(id uint, updatedDestination entities.Destination) (entities.Destination, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 
-	if err := r.Db.First(&destination, "ID = ?", id).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return entities.Destination{}, errors.New("destination not found")
+	for i, destination := range r.destinations {
+		if destination.ID == id {
+			r.destinations[i] = updatedDestination
+			r.destinations[i].ID = id
+			return r.destinations[i], nil
 		}
-		return entities.Destination{}, err
 	}
 
-	if err := r.Db.Model(&destination).Updates(updatedDestination).Error; err != nil {
-		return entities.Destination{}, err
-	}
-
-	return destination, nil
+	return entities.Destination{}, errors.New("destination not found")
 }

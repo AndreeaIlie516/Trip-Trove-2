@@ -3,14 +3,14 @@ package handlers
 import (
 	"Trip-Trove-API/domain/entities"
 	"Trip-Trove-API/domain/services"
-	"errors"
+	"Trip-Trove-API/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"net/http"
 )
 
 type DestinationHandler struct {
-	Service *services.DestinationService
+	Service services.IDestinationService
 }
 
 func (handler *DestinationHandler) AllDestinations(c *gin.Context) {
@@ -46,26 +46,25 @@ func (handler *DestinationHandler) CreateDestination(c *gin.Context) {
 
 	validate := validator.New()
 
-	err := validate.Struct(newDestination)
-
+	err := validate.RegisterValidation("name", utils.NameValidator)
 	if err != nil {
+		return
+	}
+	err = validate.RegisterValidation("location", utils.LocationValidator)
+	if err != nil {
+		return
+	}
+	err = validate.RegisterValidation("country", utils.CountryValidator)
+	if err != nil {
+		return
+	}
+	err = validate.RegisterValidation("description", utils.DescriptionValidator)
+	if err != nil {
+		return
+	}
 
-		var invalidValidationError *validator.InvalidValidationError
-		if errors.As(err, &invalidValidationError) {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid validation error"})
-			return
-		}
-
-		var errorMessages []string
-		for _, err := range err.(validator.ValidationErrors) {
-			errorMessage := "Validation error on field '" + err.Field() + "': " + err.ActualTag()
-			if err.Param() != "" {
-				errorMessage += " (Parameter: " + err.Param() + ")"
-			}
-			errorMessages = append(errorMessages, errorMessage)
-		}
-
-		c.JSON(http.StatusBadRequest, gin.H{"errors": errorMessages})
+	if err := validate.Struct(newDestination); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -107,33 +106,31 @@ func (handler *DestinationHandler) UpdateDestination(c *gin.Context) {
 
 	validate := validator.New()
 
-	err := validate.Struct(updatedDestination)
-
+	err := validate.RegisterValidation("name", utils.NameValidator)
 	if err != nil {
+		return
+	}
+	err = validate.RegisterValidation("location", utils.LocationValidator)
+	if err != nil {
+		return
+	}
+	err = validate.RegisterValidation("country", utils.CountryValidator)
+	if err != nil {
+		return
+	}
+	err = validate.RegisterValidation("description", utils.DescriptionValidator)
+	if err != nil {
+		return
+	}
 
-		var invalidValidationError *validator.InvalidValidationError
-		if errors.As(err, &invalidValidationError) {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid validation error"})
-			return
-		}
-
-		var errorMessages []string
-		for _, err := range err.(validator.ValidationErrors) {
-			errorMessage := "Validation error on field '" + err.Field() + "': " + err.ActualTag()
-			if err.Param() != "" {
-				errorMessage += " (Parameter: " + err.Param() + ")"
-			}
-			errorMessages = append(errorMessages, errorMessage)
-		}
-
-		c.JSON(http.StatusBadRequest, gin.H{"errors": errorMessages})
+	if err := validate.Struct(&updatedDestination); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	destination, err := handler.Service.UpdateDestination(id, updatedDestination)
-
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "destination not found"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update destination"})
 		return
 	}
 
