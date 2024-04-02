@@ -124,10 +124,12 @@ export function DestinationGrid() {
     setPage(value);
   };
 
-  const sortedDestinations = useMemo(
-    () => sortDestinations(destinations, sortOrder),
-    [destinations, sortOrder]
-  );
+  const sortedDestinations = useMemo(() => {
+    if (!destinations || !Array.isArray(destinations)) {
+      return [];
+    }
+    return sortDestinations(destinations, sortOrder);
+  }, [destinations, sortOrder]);
 
   const currentDestinations = useMemo(() => {
     const start = (page - 1) * itemsPerPage;
@@ -143,14 +145,19 @@ export function DestinationGrid() {
 
   const chartData: ChartData = useMemo(() => {
     const visitorsCount: Record<number, number> = {};
-    destinations.forEach((destination) => {
-      const visitors = destination.visitors_last_year;
-      if (visitorsCount[visitors]) {
-        visitorsCount[visitors] += 1;
-      } else {
-        visitorsCount[visitors] = 1;
-      }
-    });
+
+    if (destinations && Array.isArray(destinations)) {
+      destinations.forEach((destination) => {
+        const visitors = destination.visitors_last_year;
+        if (visitorsCount[visitors]) {
+          visitorsCount[visitors] += 1;
+        } else {
+          visitorsCount[visitors] = 1;
+        }
+      });
+    } else {
+      console.error("destinations is null or not an array:", destinations);
+    }
 
     const labels = Object.keys(visitorsCount).map(
       (visitors) => `${visitors} visitors`
@@ -215,44 +222,52 @@ export function DestinationGrid() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {currentDestinations.map((destination) => (
-              <TableRow key={destination.ID}>
-                <TableCell>{destination.name}</TableCell>
-                <TableCell>{destination.location}</TableCell>
-                <TableCell>{destination.country}</TableCell>
-                <TableCell>{destination.visitors_last_year}</TableCell>
-                <TableCell>
-                  <CardMedia
-                    component="img"
-                    alt="Destination"
-                    height="250"
-                    image={destination.image_url}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Button
-                    component={Link}
-                    to={`/destinations/${destination.ID}`}
-                    style={{ textDecoration: "none", color: "inherit" }}
-                  >
-                    view details
-                  </Button>
-                  <Button
-                    component={Link}
-                    to={`/destinations/update/${destination.ID}`}
-                    style={{ textDecoration: "none", color: "inherit" }}
-                  >
-                    Update
-                  </Button>
-                  <Button
-                    color="error"
-                    onClick={() => handleClickOpen(parseInt(destination.ID))}
-                  >
-                    Delete
-                  </Button>
+            {currentDestinations.length > 0 ? (
+              currentDestinations.map((destination) => (
+                <TableRow key={destination.ID}>
+                  <TableCell>{destination.name}</TableCell>
+                  <TableCell>{destination.location}</TableCell>
+                  <TableCell>{destination.country}</TableCell>
+                  <TableCell>{destination.visitors_last_year}</TableCell>
+                  <TableCell>
+                    <CardMedia
+                      component="img"
+                      alt="Destination"
+                      height="250"
+                      image={destination.image_url}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      component={Link}
+                      to={`/destinations/${destination.ID}`}
+                      style={{ textDecoration: "none", color: "inherit" }}
+                    >
+                      View Details
+                    </Button>
+                    <Button
+                      component={Link}
+                      to={`/destinations/update/${destination.ID}`}
+                      style={{ textDecoration: "none", color: "inherit" }}
+                    >
+                      Update
+                    </Button>
+                    <Button
+                      color="error"
+                      onClick={() => handleClickOpen(destination.ID)}
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={6} style={{ textAlign: "center" }}>
+                  No destinations available. Please add some destinations.
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </TableContainer>

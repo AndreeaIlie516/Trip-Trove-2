@@ -3,7 +3,7 @@ import {
   IDestinationContext,
   IDestinationProviderProps,
 } from "../interfaces/DestinationContext";
-import { IDestination, IDestinationServer } from "../interfaces/Destination";
+import { IDestination } from "../interfaces/Destination";
 import baseUrl from "../consts";
 
 const DestinationContext = createContext<IDestinationContext | undefined>(
@@ -57,7 +57,7 @@ export const DestinationProvider: React.FC<IDestinationProviderProps> = ({
     }
   };
 
-  const addDestination = async (destination: IDestinationServer) => {
+  const addDestination = async (destination: IDestination) => {
     console.log(JSON.stringify(destination));
     try {
       const response = await fetch(destinationUrl, {

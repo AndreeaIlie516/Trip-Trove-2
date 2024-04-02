@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { Button, TextField } from "@mui/material";
-import { IDestinationServer } from "../interfaces/Destination";
+import { IDestination } from "../interfaces/Destination";
 import { useDestinations } from "../contexts/DestinationContext";
 import { useNavigate } from "react-router-dom";
 
 export function AddDestination() {
   const { addDestination, destinations } = useDestinations();
   const navigate = useNavigate();
-  const [destination, setDestination] = useState<IDestinationServer>({
+  const [destination, setDestination] = useState<IDestination>({
+    ID: 0,
     name: "",
     location: "",
     country: "",
