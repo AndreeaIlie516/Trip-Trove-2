@@ -31,7 +31,6 @@ export const DestinationProvider: React.FC<IDestinationProviderProps> = ({
         throw new Error("Could not fetch destinations");
       }
       const data = (await response.json()) as IDestination[];
-      console.log("data", data);
       setDestinations(data);
     } catch (error: unknown) {
       console.error(`Error`);
@@ -58,7 +57,6 @@ export const DestinationProvider: React.FC<IDestinationProviderProps> = ({
   };
 
   const addDestination = async (destination: IDestination) => {
-    console.log(JSON.stringify(destination));
     try {
       const response = await fetch(destinationUrl, {
         method: "POST",

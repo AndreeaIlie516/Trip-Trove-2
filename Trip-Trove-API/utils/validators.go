@@ -22,13 +22,13 @@ func NameValidator(fl validator.FieldLevel) bool {
 }
 
 func LocationValidator(fl validator.FieldLevel) bool {
-	name := fl.Field().String()
+	location := fl.Field().String()
 
-	if len(name) < 3 || len(name) > 50 {
+	if len(location) < 3 || len(location) > 50 {
 		return false
 	}
 
-	for _, char := range name {
+	for _, char := range location {
 		if !(char == ' ' || char == '-' || unicode.IsLetter(char)) {
 			return false
 		}
@@ -38,13 +38,13 @@ func LocationValidator(fl validator.FieldLevel) bool {
 }
 
 func CountryValidator(fl validator.FieldLevel) bool {
-	name := fl.Field().String()
+	country := fl.Field().String()
 
-	if len(name) < 3 || len(name) > 50 {
+	if len(country) < 3 || len(country) > 50 {
 		return false
 	}
 
-	for _, char := range name {
+	for _, char := range country {
 		if !(char == ' ' || char == '-' || unicode.IsLetter(char)) {
 			return false
 		}
@@ -54,9 +54,9 @@ func CountryValidator(fl validator.FieldLevel) bool {
 }
 
 func DescriptionValidator(fl validator.FieldLevel) bool {
-	name := fl.Field().String()
+	description := fl.Field().String()
 
-	if len(name) < 10 {
+	if len(description) < 10 {
 		return false
 	}
 

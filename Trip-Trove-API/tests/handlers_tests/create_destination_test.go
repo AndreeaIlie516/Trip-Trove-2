@@ -130,7 +130,7 @@ func TestCreateDestination_DescriptionTooShort(t *testing.T) {
 	routes.RegisterDestinationRoutes(router, destinationHandler)
 
 	newDestination := entities.Destination{
-		Name:             "Lapland ^&%",
+		Name:             "Lapland",
 		Location:         "Finnish Lapland",
 		Country:          "Finland",
 		ImageUrl:         "https://aventurescu.ro/wp-content/uploads/2021/10/madeira-8-1078x516.jpg",
@@ -162,7 +162,7 @@ func TestCreateDestination_VisitorsLastYearNegative(t *testing.T) {
 	routes.RegisterDestinationRoutes(router, destinationHandler)
 
 	newDestination := entities.Destination{
-		Name:             "Lapland ^&%",
+		Name:             "Lapland",
 		Location:         "Finnish Lapland",
 		Country:          "Finland",
 		ImageUrl:         "https://aventurescu.ro/wp-content/uploads/2021/10/madeira-8-1078x516.jpg",
@@ -194,7 +194,7 @@ func TestCreateDestination_InvalidImageUrl(t *testing.T) {
 	routes.RegisterDestinationRoutes(router, destinationHandler)
 
 	newDestination := entities.Destination{
-		Name:             "Lapland ^&%",
+		Name:             "Lapland",
 		Location:         "Finnish Lapland",
 		Country:          "Finland",
 		ImageUrl:         "aaaa",

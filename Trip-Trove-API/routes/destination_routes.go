@@ -13,5 +13,6 @@ func RegisterDestinationRoutes(router *gin.Engine, destinationHandler *handlers.
 		eventGroup.POST("/", destinationHandler.CreateDestination)
 		eventGroup.PUT("/:id", destinationHandler.UpdateDestination)
 		eventGroup.DELETE("/:id", destinationHandler.DeleteDestination)
+		eventGroup.HEAD("/", destinationHandler.Head)
 	}
 }

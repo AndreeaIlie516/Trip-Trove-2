@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useDestinations } from "../contexts/DestinationContext";
 import { IDestination } from "../interfaces/Destination";
+import ServerCheck from "./ServerCheck";
 import {
   Table,
   TableContainer,
@@ -187,6 +188,7 @@ export function DestinationGrid() {
 
   return (
     <>
+      <ServerCheck />
       <Button
         component={Link}
         to={`/destinations/add`}

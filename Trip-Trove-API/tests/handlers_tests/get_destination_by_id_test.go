@@ -45,8 +45,6 @@ func TestDestinationByID_InvalidIDFormat(t *testing.T) {
 
 	mockService := &mocks.MockDestinationService{
 		DestinationByIDFunc: func(idStr string) (*entities.Destination, error) {
-			// Return a mock error that simulates the behavior when an invalid ID format is passed.
-			// Adjust the error message as needed to match your service's actual behavior.
 			return nil, errors.New("invalid ID format")
 		},
 	}

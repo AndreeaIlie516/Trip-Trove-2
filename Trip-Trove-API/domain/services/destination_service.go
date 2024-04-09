@@ -5,6 +5,7 @@ import (
 	"Trip-Trove-API/domain/repositories"
 	"errors"
 	"fmt"
+	"github.com/jaswdr/faker"
 )
 
 type IDestinationService interface {
@@ -74,5 +75,24 @@ func (service *DestinationService) UpdateDestination(idStr string, destination e
 	if err != nil {
 		return entities.Destination{}, err
 	}
+	return destination, nil
+}
+
+func (service *DestinationService) GenerateFakeDestination(f faker.Faker) (entities.Destination, error) {
+	fakeDestination := entities.Destination{
+		Name:             f.Company().Name(),
+		Location:         f.Address().City(),
+		Country:          f.Address().Country(),
+		ImageUrl:         f.Internet().URL(),
+		Description:      f.Lorem().Paragraph(3),
+		VisitorsLastYear: f.IntBetween(1000, 100000),
+		IsPrivate:        false,
+	}
+
+	destination, err := service.Repo.CreateDestination(fakeDestination)
+	if err != nil {
+		return entities.Destination{}, err
+	}
+
 	return destination, nil
 }

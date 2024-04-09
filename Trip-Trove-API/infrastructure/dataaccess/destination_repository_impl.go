@@ -43,6 +43,7 @@ func (r *InMemoryDestinationRepository) CreateDestination(destination entities.D
 }
 
 func (r *InMemoryDestinationRepository) DeleteDestination(id uint) (entities.Destination, error) {
+	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	for i, destination := range r.destinations {

@@ -136,3 +136,9 @@ func (handler *DestinationHandler) UpdateDestination(c *gin.Context) {
 
 	c.JSON(http.StatusOK, destination)
 }
+
+func (handler *DestinationHandler) Head(c *gin.Context) {
+	c.Header("Content-Type", "application/json")
+
+	c.Status(http.StatusOK)
+}
