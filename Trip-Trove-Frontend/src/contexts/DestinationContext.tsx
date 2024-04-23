@@ -233,10 +233,6 @@ export const DestinationProvider: React.FC<IDestinationProviderProps> = ({
     }
   };
 
-  const updateLocalStorage = (destinations: IDestination[]) => {
-    localStorage.setItem("destinations", JSON.stringify(destinations));
-  };
-
   const addDestination = async (
     destination: IDestination,
     forceSync: boolean = false
@@ -269,34 +265,41 @@ export const DestinationProvider: React.FC<IDestinationProviderProps> = ({
   };
 
   const deleteDestination = async (id: number, forceSync: boolean = false) => {
-    if (isOnline && !forceSync) {
+    const isDeletedOffline = !isOnline || forceSync;
+
+    if (isDeletedOffline) {
+      // Add the deletion to local changes for later synchronization
+      modifyLocalChanges("delete", { id });
+
+      // Update local state and storage immediately
+      updateStateAndStorage(id);
+    } else {
       try {
         const response = await fetch(`${destinationUrl}/${id}`, {
           method: "DELETE",
         });
-        if (!response.ok) {
-          throw new Error("Failed to delete destination");
-        }
-        setDestinations((prev) => {
-          const updatedDestinations = prev.filter((d) => d.ID !== id);
-          updateLocalStorage(updatedDestinations); // Make sure local storage is updated after state
-          return updatedDestinations;
-        });
+        if (!response.ok) throw new Error("Failed to delete destination");
+        updateStateAndStorage(id);
       } catch (error) {
         console.error("Delete error:", error);
-        modifyLocalChanges("delete", { id });
+        modifyLocalChanges("delete", { id }); // Fallback if online deletion fails
+        updateStateAndStorage(id);
       }
-    } else {
-      console.log("try to delete offline");
-      modifyLocalChanges("delete", { id });
-      console.log("merge1");
-      setDestinations((prev) => {
-        const updatedDestinations = prev.filter((d) => d.ID !== id);
-        updateLocalStorage(updatedDestinations); // Update local storage in the offline scenario
-        return updatedDestinations;
-      });
-      console.log("Destination after delete offline: " + destinations);
     }
+  };
+
+  const updateStateAndStorage = (id: number) => {
+    setDestinations((prev) => {
+      const updatedDestinations = prev.filter(
+        (destination) => destination.ID !== id
+      );
+      updateLocalStorage(updatedDestinations);
+      return updatedDestinations;
+    });
+  };
+
+  const updateLocalStorage = (destinations: IDestination[]) => {
+    localStorage.setItem("destinations", JSON.stringify(destinations));
   };
 
   const updateDestination = async (
