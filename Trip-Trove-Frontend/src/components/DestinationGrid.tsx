@@ -128,8 +128,6 @@ export function DestinationGrid() {
     setPage(value);
   };
 
-  
-
   const getLocationNameById = (id: number): string => {
     const location = locations.find((loc) => loc.ID === id);
     return location ? location.name : "Unknown";

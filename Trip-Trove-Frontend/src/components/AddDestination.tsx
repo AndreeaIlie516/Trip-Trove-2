@@ -11,7 +11,7 @@ import {
 import { IDestination } from "../interfaces/Destination";
 import { useDestinations } from "../contexts/DestinationContext";
 import { useLocations } from "../contexts/LocationContext";
-import {  useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export function AddDestination() {
   const { addDestination, destinations } = useDestinations();
@@ -29,7 +29,7 @@ export function AddDestination() {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    addDestination(destination);
+    addDestination(destination, false);
     navigate("/destinations");
   };
 

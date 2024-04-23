@@ -10,7 +10,6 @@ import (
 	"Trip-Trove-API/presentation/handlers"
 	"Trip-Trove-API/routes"
 	"github.com/gin-gonic/gin"
-	"github.com/jaswdr/faker"
 	"github.com/joho/godotenv"
 	"log"
 )
@@ -46,13 +45,6 @@ func main() {
 
 	destinationService := services.DestinationService{Repo: destinationRepository, LocationRepo: locationRepository, WsManager: websocketManager}
 	locationService := services.LocationService{Repo: locationRepository, DestinationRepo: destinationRepository}
-	f := faker.New()
-	for i := 0; i < 20; i++ {
-		_, err := destinationService.GenerateFakeDestination(f)
-		if err != nil {
-			panic("Failed to generate fake destinations")
-		}
-	}
 
 	destinationHandler := handlers.DestinationHandler{Service: &destinationService}
 	locationHandler := handlers.LocationHandler{Service: &locationService}

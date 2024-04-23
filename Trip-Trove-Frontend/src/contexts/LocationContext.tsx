@@ -20,7 +20,8 @@ export function useLocations() {
 export const LocationProvider: React.FC<ILocationProviderProps> = ({
   children,
 }) => {
-  const [locations, setLocation] = useState<ILocation[]>([]);
+  const [locations, setLocations] = useState<ILocation[]>([]);
+  const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
 
   const fetchLocations = async () => {
     try {
@@ -29,14 +30,42 @@ export const LocationProvider: React.FC<ILocationProviderProps> = ({
         throw new Error("Could not fetch locations");
       }
       const data = (await response.json()) as ILocation[];
-      setLocation(data);
+      setLocations(data);
+      localStorage.setItem("locations", JSON.stringify(data));
     } catch (error: unknown) {
       console.error(`Error`);
+      loadLocationsFromLocalStorage();
+    }
+  };
+
+  const loadLocationsFromLocalStorage = () => {
+    const localData = localStorage.getItem("locations");
+    if (localData) {
+      setLocations(JSON.parse(localData));
     }
   };
 
   useEffect(() => {
-    fetchLocations();
+    if (navigator.onLine) {
+      fetchLocations();
+    } else {
+      loadLocationsFromLocalStorage();
+    }
+
+    const handleNetworkChange = () => {
+      const onlineStatus = navigator.onLine;
+      setIsOnline(onlineStatus);
+      if (onlineStatus) {
+        fetchLocations();
+      }
+    };
+    
+    window.addEventListener("online", handleNetworkChange);
+    window.addEventListener("offline", handleNetworkChange);
+    return () => {
+      window.removeEventListener("online", handleNetworkChange);
+      window.removeEventListener("offline", handleNetworkChange);
+    };
   }, []);
 
   const getLocationById = async (
