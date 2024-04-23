@@ -6,13 +6,16 @@ import (
 )
 
 func RegisterDestinationRoutes(router *gin.Engine, destinationHandler *handlers.DestinationHandler) {
-	eventGroup := router.Group("/destinations")
+	destinationGroup := router.Group("/destinations")
 	{
-		eventGroup.GET("/", destinationHandler.AllDestinations)
-		eventGroup.GET("/:id", destinationHandler.DestinationByID)
-		eventGroup.POST("/", destinationHandler.CreateDestination)
-		eventGroup.PUT("/:id", destinationHandler.UpdateDestination)
-		eventGroup.DELETE("/:id", destinationHandler.DeleteDestination)
-		eventGroup.HEAD("/", destinationHandler.Head)
+		destinationGroup.GET("/", destinationHandler.AllDestinations)
+		destinationGroup.GET("/:id", destinationHandler.DestinationByID)
+		destinationGroup.GET("/location/:locationId", destinationHandler.DestinationsByLocationID)
+		destinationGroup.POST("/", destinationHandler.CreateDestination)
+		destinationGroup.PUT("/:id", destinationHandler.UpdateDestination)
+		destinationGroup.DELETE("/:id", destinationHandler.DeleteDestination)
+		destinationGroup.HEAD("/", destinationHandler.Head)
+		destinationGroup.GET("/start-generating-destinations", destinationHandler.StartGeneratingDestinationsHandler)
+		destinationGroup.GET("/stop-generating-destinations", destinationHandler.StopGeneratingDestinationsHandler)
 	}
 }

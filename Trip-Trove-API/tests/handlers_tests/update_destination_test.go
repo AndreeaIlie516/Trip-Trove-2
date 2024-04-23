@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -17,6 +18,17 @@ import (
 func TestUpdateDestination_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
+
+	_ = &mocks.MockLocationService{
+		LocationByIDFunc: func(idStr string) (*entities.Location, error) {
+			return &entities.Location{
+				Model:       gorm.Model{ID: 1},
+				Name:        "Finnish Lapland",
+				Country:     "Finland",
+				Description: "Beautiful northern landscapes with aurora",
+			}, nil
+		},
+	}
 
 	mockService := &mocks.MockDestinationService{
 		UpdateDestinationFunc: func(id string, destination entities.Destination) (entities.Destination, error) {
@@ -29,8 +41,7 @@ func TestUpdateDestination_Success(t *testing.T) {
 
 	updatedDestination := entities.Destination{
 		Name:             "Updated Lake Retreat",
-		Location:         "Updated Finnish Lapland",
-		Country:          "Finland",
+		LocationID:       1,
 		ImageUrl:         "https://example.com/updated-image.jpg",
 		Description:      "An updated serene lake retreat.",
 		VisitorsLastYear: 6000,
@@ -49,6 +60,17 @@ func TestUpdateDestination_NameTooShort(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
 
+	_ = &mocks.MockLocationService{
+		LocationByIDFunc: func(idStr string) (*entities.Location, error) {
+			return &entities.Location{
+				Model:       gorm.Model{ID: 1},
+				Name:        "Finnish Lapland",
+				Country:     "Finland",
+				Description: "Beautiful northern landscapes with aurora",
+			}, nil
+		},
+	}
+
 	mockService := &mocks.MockDestinationService{
 		UpdateDestinationFunc: func(id string, destination entities.Destination) (entities.Destination, error) {
 			return destination, nil
@@ -60,8 +82,7 @@ func TestUpdateDestination_NameTooShort(t *testing.T) {
 
 	updatedDestination := entities.Destination{
 		Name:             "U",
-		Location:         "Updated Finnish Lapland",
-		Country:          "Finland",
+		LocationID:       1,
 		ImageUrl:         "https://example.com/updated-image.jpg",
 		Description:      "An updated serene lake retreat.",
 		VisitorsLastYear: 6000,
@@ -75,36 +96,4 @@ func TestUpdateDestination_NameTooShort(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code, "Field name validation failed")
-}
-
-func TestUpdateDestination_InvalidImageUrl(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	router := gin.Default()
-
-	mockService := &mocks.MockDestinationService{
-		UpdateDestinationFunc: func(id string, destination entities.Destination) (entities.Destination, error) {
-			return destination, nil
-		},
-	}
-
-	destinationHandler := &handlers.DestinationHandler{Service: mockService}
-	routes.RegisterDestinationRoutes(router, destinationHandler)
-
-	updatedDestination := entities.Destination{
-		Name:             "Updated Lake Retreat",
-		Location:         "Updated Finnish Lapland",
-		Country:          "Finland",
-		ImageUrl:         "aaa",
-		Description:      "An updated serene lake retreat.",
-		VisitorsLastYear: 6000,
-		IsPrivate:        true,
-	}
-
-	requestBody, _ := json.Marshal(updatedDestination)
-
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("PUT", "/destinations/1", bytes.NewBuffer(requestBody))
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusBadRequest, w.Code, "Field imageUrl validation failed")
 }

@@ -1,12 +1,13 @@
 package entities
 
+import "gorm.io/gorm"
+
 type Destination struct {
-	ID               uint   `json:"ID"`
-	Name             string `json:"name" validate:"required,name"`
-	Location         string `json:"location" validate:"required,location"`
-	Country          string `json:"country" validate:"required,country"`
-	ImageUrl         string `json:"image_url" validate:"required,url"`
-	Description      string `json:"description" validate:"required,description"`
-	VisitorsLastYear int    `json:"visitors_last_year" validate:"gte=0"`
-	IsPrivate        bool   `json:"is_private"`
+	gorm.Model
+	Name             string `gorm:"column:name;not null" json:"name" validate:"required,min=3,max=50"`
+	LocationID       uint   `gorm:"column:location_id;not null" json:"location_id" validate:"required,number"`
+	ImageUrl         string `gorm:"column:image_url" json:"image_url" validate:"max=100"`
+	Description      string `gorm:"column:description" json:"description" validate:"min=10,max=256"`
+	VisitorsLastYear int    `gorm:"column:visitors_last_year" json:"visitors_last_year" validate:"gte=0"`
+	IsPrivate        bool   `gorm:"column:is_private;not null" json:"is_private"`
 }

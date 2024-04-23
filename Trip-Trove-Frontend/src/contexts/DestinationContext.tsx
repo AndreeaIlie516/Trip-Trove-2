@@ -6,9 +6,9 @@ import {
 import { IDestination } from "../interfaces/Destination";
 import baseUrl from "../consts";
 
-const DestinationContext = createContext<IDestinationContext | undefined>(
-  undefined
-);
+export const DestinationContext = createContext<
+  IDestinationContext | undefined
+>(undefined);
 const destinationUrl = `${baseUrl}/destinations`;
 
 export function useDestinations() {
@@ -24,6 +24,43 @@ export const DestinationProvider: React.FC<IDestinationProviderProps> = ({
 }) => {
   const [destinations, setDestinations] = useState<IDestination[]>([]);
 
+  const [webSocket, setWebSocket] = useState<WebSocket | null>(null);
+
+  const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
+
+  useEffect(() => {
+    fetchDestinations();
+
+    const ws = new WebSocket("ws://localhost:3000/ws");
+    setWebSocket(ws);
+
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      console.log("Message: " + message);
+      console.log("Message action: " + message.action);
+      if (message.action === "GenerateDestination") {
+        const newDestination = message.destination;
+        setDestinations((prevDestinations) => {
+          const updatedDestinations = [...prevDestinations, newDestination];
+          console.log("Updated Destinations:", updatedDestinations);
+          return updatedDestinations;
+        });
+      }
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, []);
+
+  const handleNetworkChange = () => {
+    const onlineStatus = navigator.onLine;
+    setIsOnline(onlineStatus);
+    if (onlineStatus) {
+      syncWithServer();
+    }
+  };
+
   const fetchDestinations = async () => {
     try {
       const response = await fetch(destinationUrl);
@@ -37,67 +74,221 @@ export const DestinationProvider: React.FC<IDestinationProviderProps> = ({
     }
   };
 
-  useEffect(() => {
+  const syncWithServer = async (): Promise<void> => {
+    const changes: Array<{
+      type: string;
+      destination?: IDestination;
+      id?: number;
+    }> = JSON.parse(localStorage.getItem("destinationChanges") || "[]");
+    if (changes.length === 0) {
+      return;
+    }
+
+    for (const change of changes) {
+      try {
+        switch (change.type) {
+          case "add":
+            if (change.destination) {
+              const addResponse = await fetch(destinationUrl, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(change.destination),
+              });
+              if (!addResponse.ok) throw new Error("Failed to add destination");
+            }
+            break;
+          case "update":
+            if (change.destination) {
+              const updateResponse = await fetch(
+                `${destinationUrl}/${change.destination.ID}`,
+                {
+                  method: "PUT",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify(change.destination),
+                }
+              );
+              if (!updateResponse.ok)
+                throw new Error("Failed to update destination");
+            }
+            break;
+          case "delete":
+            if (change.id !== undefined) {
+              const deleteResponse = await fetch(
+                `${destinationUrl}/${change.id}`,
+                {
+                  method: "DELETE",
+                }
+              );
+              if (!deleteResponse.ok)
+                throw new Error("Failed to delete destination");
+            }
+            break;
+          default:
+            throw new Error("Unrecognized change type");
+        }
+      } catch (error) {
+        console.error("Sync error:", error);
+      }
+    }
+
+    localStorage.removeItem("destinationChanges");
     fetchDestinations();
+  };
+
+  useEffect(() => {
+    checkNetworkAndFetchDestinations();
+    handleNetworkChange();
+
+    window.addEventListener("online", handleNetworkChange);
+    window.addEventListener("offline", handleNetworkChange);
+    return () => {
+      window.removeEventListener("online", handleNetworkChange);
+      window.removeEventListener("offline", handleNetworkChange);
+    };
   }, []);
+
+  const modifyLocalChanges = (type: string, data: any): void => {
+    const changes = JSON.parse(
+      localStorage.getItem("destinationChanges") || "[]"
+    );
+    changes.push({ type, ...data });
+    localStorage.setItem("destinationChanges", JSON.stringify(changes));
+  };
+
+  // useEffect(() => {
+  //   fetchDestinations();
+  // }, []);
+
+  const checkNetworkAndFetchDestinations = () => {
+    if (navigator.onLine) {
+      fetchDestinationsFromServer();
+    } else {
+      loadDestinationsFromLocalStorage();
+    }
+  };
+
+  const fetchDestinationsFromServer = async () => {
+    try {
+      const response = await fetch(destinationUrl);
+      if (response.ok) {
+        const data = (await response.json()) as IDestination[];
+        setDestinations(data);
+        localStorage.setItem("destinations", JSON.stringify(data));
+      } else {
+        throw new Error("Server responded with an error");
+      }
+    } catch (error) {
+      console.error("Failed to fetch destinations:", error);
+      loadDestinationsFromLocalStorage(); // Fallback to local storage if fetch fails
+    }
+  };
+
+  const loadDestinationsFromLocalStorage = () => {
+    const localData = localStorage.getItem("destinations");
+    if (localData) {
+      setDestinations(JSON.parse(localData));
+    } else {
+      console.warn("No local data available");
+      setDestinations([]); // Set to empty array if neither network nor local data is available
+    }
+  };
 
   const getDestinationById = async (
     id: number
   ): Promise<IDestination | undefined> => {
+    console.log("id: " + id);
     try {
       const response = await fetch(`${destinationUrl}/${id}`);
+      console.log("response: " + response);
       if (!response.ok) {
         throw new Error("could not find destination by id");
       }
-      const data = (await response.json()) as IDestination;
+      const jsonResponse = await response.json();
+      console.log("JSON response:", jsonResponse);
+
+      const data = jsonResponse as IDestination;
+
+      console.log("!!Data: " + data.ID);
+
       return data;
     } catch (err: unknown) {
       console.log(`error`);
     }
   };
 
-  const addDestination = async (destination: IDestination) => {
-    try {
-      const response = await fetch(destinationUrl, {
-        method: "POST",
-        body: JSON.stringify(destination),
-      });
-      if (!response.ok) {
-        throw new Error("could not add destination");
+  const addDestination = async (
+    destination: IDestination,
+    forceSync: boolean
+  ) => {
+    if (isOnline && !forceSync) {
+      try {
+        console.log("add json: " + JSON.stringify(destination));
+        const response = await fetch(destinationUrl, {
+          method: "POST",
+          body: JSON.stringify(destination),
+        });
+
+        console.log("Response to add: " + response.ok);
+        console.log("Response to add json: " + response.json);
+        if (!response.ok) {
+          throw new Error("could not add destination");
+        }
+        await fetchDestinations();
+      } catch (error: unknown) {
+        console.log("error");
       }
-      await fetchDestinations();
-    } catch (error: unknown) {
-      console.log("error");
+    } else {
+      modifyLocalChanges("add", { destination });
+      setDestinations((prev) => [...prev, destination]);
     }
   };
 
-  const deleteDestination = async (id: number) => {
-    console.log(`delete called for destination ${id}`);
-    try {
-      const response = await fetch(`${destinationUrl}/${id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) {
-        throw new Error("cannot delete destination");
+  const deleteDestination = async (id: number, forceSync: boolean) => {
+    if (isOnline && !forceSync) {
+      console.log(`delete called for destination ${id}`);
+      try {
+        const response = await fetch(`${destinationUrl}/${id}`, {
+          method: "DELETE",
+        });
+        if (!response.ok) {
+          throw new Error("cannot delete destination");
+        }
+        await fetchDestinations();
+      } catch (err: unknown) {
+        console.log(`error`);
       }
-      await fetchDestinations();
-    } catch (err: unknown) {
-      console.log(`error`);
+    } else {
+      modifyLocalChanges("delete", { id });
+      setDestinations((prev) => prev.filter((d) => d.ID !== id));
     }
   };
 
-  const updateDestination = async (destination: IDestination) => {
-    try {
-      const response = await fetch(`${destinationUrl}/${destination.ID}`, {
-        method: "PUT",
-        body: JSON.stringify(destination),
-      });
-      if (!response.ok) {
-        throw new Error("could not update destination");
+  const updateDestination = async (
+    destination: IDestination,
+    forceSync: boolean
+  ) => {
+    if (isOnline && !forceSync) {
+      try {
+        const response = await fetch(`${destinationUrl}/${destination.ID}`, {
+          method: "PUT",
+          body: JSON.stringify(destination),
+        });
+        if (!response.ok) {
+          throw new Error("could not update destination");
+        }
+        await fetchDestinations();
+      } catch (err: unknown) {
+        console.log("error");
       }
-      await fetchDestinations();
-    } catch (err: unknown) {
-      console.log("error");
+    } else {
+      modifyLocalChanges("update", { destination });
+      setDestinations((prev) =>
+        prev.map((d) => (d.ID === destination.ID ? destination : d))
+      );
     }
   };
 

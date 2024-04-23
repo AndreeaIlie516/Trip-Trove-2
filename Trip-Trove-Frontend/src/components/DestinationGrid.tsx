@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useDestinations } from "../contexts/DestinationContext";
+import { useLocations } from "../contexts/LocationContext";
 import { IDestination } from "../interfaces/Destination";
 import ServerCheck from "./ServerCheck";
 import {
@@ -85,8 +86,10 @@ export function DestinationGrid() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "recommended">(
     "asc"
   );
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   const { destinations, deleteDestination } = useDestinations();
+  const { locations } = useLocations();
 
   const handleChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value);
@@ -106,7 +109,7 @@ export function DestinationGrid() {
   const handleDelete = () => {
     console.log("Delete dialog confirmed");
     if (deleteId) {
-      deleteDestination(deleteId);
+      deleteDestination(deleteId, false);
       setDeleteId(null);
     }
     setOpen(false);
@@ -123,6 +126,13 @@ export function DestinationGrid() {
     value: number
   ) => {
     setPage(value);
+  };
+
+  
+
+  const getLocationNameById = (id: number): string => {
+    const location = locations.find((loc) => loc.ID === id);
+    return location ? location.name : "Unknown";
   };
 
   const sortedDestinations = useMemo(() => {
@@ -217,7 +227,6 @@ export function DestinationGrid() {
             <TableRow>
               <TableCell>Name</TableCell>
               <TableCell>Location</TableCell>
-              <TableCell>Country</TableCell>
               <TableCell>Visitors last year</TableCell>
               <TableCell>Image</TableCell>
               <TableCell>Action</TableCell>
@@ -228,8 +237,9 @@ export function DestinationGrid() {
               currentDestinations.map((destination) => (
                 <TableRow key={destination.ID}>
                   <TableCell>{destination.name}</TableCell>
-                  <TableCell>{destination.location}</TableCell>
-                  <TableCell>{destination.country}</TableCell>
+                  <TableCell>
+                    {getLocationNameById(destination.location_id)}
+                  </TableCell>
                   <TableCell>{destination.visitors_last_year}</TableCell>
                   <TableCell>
                     <CardMedia

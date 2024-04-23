@@ -19,11 +19,8 @@ const ServerCheck: React.FC = () => {
         cache: "no-cache",
       });
 
-      console.log("response: " + response.ok);
-
       if (!response.ok) throw new Error("Server response not OK");
 
-      console.log("warning show: " + warning.show);
       if (warning.show) setWarning({ show: false, message: "" });
     } catch (error) {
       console.error("Fetch error:", error);
@@ -52,10 +49,8 @@ const ServerCheck: React.FC = () => {
       })
     );
 
-    // Periodically check server availability
-    const interval = setInterval(checkServer, 60000); // Check every 60 seconds
+    const interval = setInterval(checkServer, 60000); 
 
-    // Cleanup
     return () => {
       window.removeEventListener("online", checkServer);
       window.removeEventListener("offline", () =>

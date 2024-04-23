@@ -21,7 +21,7 @@ const Footer: React.FC = () => {
         color="white"
         marginTop="10px"
       >
-        Trip Trove, toate drepturile rezervate @ MPP (kill me please)
+        Trip Trove, toate drepturile rezervate @ MPP
       </Typography>
     </Box>
   );

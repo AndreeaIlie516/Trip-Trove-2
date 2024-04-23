@@ -6,7 +6,10 @@ import (
 	"Trip-Trove-API/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/jaswdr/faker"
 	"net/http"
+	"strconv"
+	"time"
 )
 
 type DestinationHandler struct {
@@ -36,6 +39,20 @@ func (handler *DestinationHandler) DestinationByID(c *gin.Context) {
 	c.JSON(http.StatusOK, destination)
 }
 
+func (handler *DestinationHandler) DestinationsByLocationID(c *gin.Context) {
+	locationID := c.Param("locationId")
+	destinations, err := handler.Service.DestinationsByLocationID(locationID)
+	if err != nil {
+		if err.Error() == "invalid ID format" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		} else {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		}
+		return
+	}
+	c.JSON(http.StatusOK, destinations)
+}
+
 func (handler *DestinationHandler) CreateDestination(c *gin.Context) {
 	var newDestination entities.Destination
 
@@ -47,14 +64,6 @@ func (handler *DestinationHandler) CreateDestination(c *gin.Context) {
 	validate := validator.New()
 
 	err := validate.RegisterValidation("name", utils.NameValidator)
-	if err != nil {
-		return
-	}
-	err = validate.RegisterValidation("location", utils.LocationValidator)
-	if err != nil {
-		return
-	}
-	err = validate.RegisterValidation("country", utils.CountryValidator)
 	if err != nil {
 		return
 	}
@@ -73,6 +82,8 @@ func (handler *DestinationHandler) CreateDestination(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create destination"})
 		return
 	}
+
+	//handler.Service.wsManager.AddToBroadcast(websocket.EventUpdateNotification{Action: "CreateDestination", Destination: destination})
 
 	c.JSON(http.StatusCreated, destination)
 }
@@ -110,14 +121,6 @@ func (handler *DestinationHandler) UpdateDestination(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	err = validate.RegisterValidation("location", utils.LocationValidator)
-	if err != nil {
-		return
-	}
-	err = validate.RegisterValidation("country", utils.CountryValidator)
-	if err != nil {
-		return
-	}
 	err = validate.RegisterValidation("description", utils.DescriptionValidator)
 	if err != nil {
 		return
@@ -141,4 +144,23 @@ func (handler *DestinationHandler) Head(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
 
 	c.Status(http.StatusOK)
+}
+
+func (handler *DestinationHandler) StartGeneratingDestinationsHandler(c *gin.Context) {
+	intervalParam := c.Query("interval")
+	interval, err := strconv.Atoi(intervalParam)
+	if err != nil || interval <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid interval parameter"})
+		return
+	}
+
+	f := faker.New()
+	handler.Service.StartGeneratingDestinations(time.Duration(interval)*time.Second, f)
+	c.JSON(http.StatusOK, gin.H{"message": "Started generating destinations"})
+}
+
+func (handler *DestinationHandler) StopGeneratingDestinationsHandler(c *gin.Context) {
+	println("Stop called")
+	handler.Service.StopGeneratingDestinations()
+	c.JSON(http.StatusOK, gin.H{"message": "Stopped generating destinations"})
 }

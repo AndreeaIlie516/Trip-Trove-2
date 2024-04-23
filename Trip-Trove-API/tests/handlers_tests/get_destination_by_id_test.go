@@ -9,6 +9,7 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -18,9 +19,20 @@ func TestDestinationByID_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
 
+	_ = &mocks.MockLocationService{
+		LocationByIDFunc: func(idStr string) (*entities.Location, error) {
+			return &entities.Location{
+				Model:       gorm.Model{ID: 1},
+				Name:        "Finnish Lapland",
+				Country:     "Finland",
+				Description: "Beautiful northern landscapes with aurora",
+			}, nil
+		},
+	}
+
 	mockService := &mocks.MockDestinationService{
 		DestinationByIDFunc: func(idStr string) (*entities.Destination, error) {
-			return &entities.Destination{ID: 1, Name: "Beach Paradise", Location: "Hawaii", Country: "USA"}, nil
+			return &entities.Destination{Name: "Beach Paradise", LocationID: 1}, nil
 		},
 	}
 

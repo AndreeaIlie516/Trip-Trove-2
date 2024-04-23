@@ -25,7 +25,7 @@ export const ResponsiveAppBar: React.FC = () => {
 
   const navigate = useNavigate();
 
-  let pages: string[] = ["Destinations"];
+  let pages: string[] = ["Destinations", "Locations"];
 
   const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElNav(event.currentTarget);
@@ -43,7 +43,12 @@ export const ResponsiveAppBar: React.FC = () => {
   };
 
   const handleNavigate = (page: string) => {
-    if (page == "Destinations") navigate("/");
+    if (page == "Destinations") 
+      navigate("/")
+    else {
+      if (page == "Locations")
+        navigate("/locations")
+    }
     handleCloseNavMenu();
   };
 

@@ -1,11 +1,22 @@
 import { useEffect, useState } from "react";
-import { Button, SelectChangeEvent, TextField } from "@mui/material";
+import {
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  SelectChangeEvent,
+} from "@mui/material";
 import { IDestination } from "../interfaces/Destination";
 import { useDestinations } from "../contexts/DestinationContext";
+import { useLocations } from "../contexts/LocationContext";
 import { useNavigate, useParams } from "react-router-dom";
 
 export function UpdateDestination() {
-  const { getDestinationById, updateDestination } = useDestinations();
+  const { getDestinationById, updateDestination } =
+    useDestinations();
+  const { locations } = useLocations();
   const navigate = useNavigate();
   const { id } = useParams();
   const [destination, setDestination] = useState<IDestination | undefined>(
@@ -21,7 +32,7 @@ export function UpdateDestination() {
       setDestination(fetchedDestination);
     };
     fetchDestinationDetails();
-  }, []);
+  }, [id, getDestinationById]);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -46,6 +57,16 @@ export function UpdateDestination() {
     );
   };
 
+  const handleLocationChange = (event: SelectChangeEvent) => {
+    const locationName = event.target.value;
+    const selectedLocation = locations.find((loc) => loc.name === locationName);
+    if (selectedLocation) {
+      setDestination((prev) =>
+        prev ? { ...prev, location_id: selectedLocation.ID } : prev
+      );
+    }
+  };
+
   if (!destination) return <div>Loading...</div>;
 
   return (
@@ -58,22 +79,26 @@ export function UpdateDestination() {
         value={destination.name}
         onChange={handleChange}
       />
-      <TextField
-        margin="normal"
-        fullWidth
-        label="Location"
-        name="location"
-        value={destination.location}
-        onChange={handleChange}
-      />
-      <TextField
-        margin="normal"
-        fullWidth
-        label="Country"
-        name="country"
-        value={destination.country}
-        onChange={handleChange}
-      />
+      <FormControl fullWidth margin="normal">
+        <InputLabel id="location-label">Location</InputLabel>
+        <Select
+          labelId="location-label"
+          name="location_id"
+          value={
+            destination && locations
+              ? locations.find((loc) => loc.ID === destination.location_id)
+                  ?.name
+              : ""
+          }
+          onChange={handleLocationChange}
+        >
+          {locations.map((loc) => (
+            <MenuItem key={loc.ID} value={loc.name}>
+              {loc.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
       <TextField
         margin="normal"
         fullWidth

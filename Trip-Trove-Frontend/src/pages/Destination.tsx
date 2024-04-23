@@ -4,28 +4,49 @@ import ResponsiveAppBar from "../components/ResponsiveAppBar";
 import Footer from "../components/Footer";
 import { Box, Typography, Divider } from "@mui/material";
 import { IDestination } from "../interfaces/Destination";
+import { ILocation } from "../interfaces/Location";
 import { useDestinations } from "../contexts/DestinationContext";
+import { useLocations } from "../contexts/LocationContext";
 
 export function Destination() {
   const { id } = useParams<{ id: string }>();
   const { getDestinationById } = useDestinations();
+  const { getLocationById } = useLocations();
   const [destination, setDestination] = useState<IDestination | undefined>();
+  const [location, setLocation] = useState<ILocation | undefined>();
 
   useEffect(() => {
     const fetchDestinationDetails = async () => {
+      console.log("Here");
       if (!id) {
         return null;
       }
       const fetchedDestination = await getDestinationById(parseInt(id));
+      console.log("!!!Destination!!!: " + fetchedDestination?.description);
       setDestination(fetchedDestination);
     };
     fetchDestinationDetails();
-  }, []);
+  }, [id, getDestinationById]);
 
-  console.log("ID: " + id);
-  console.log("Destination:" + destination?.ID + " " + destination?.country);
+  useEffect(() => {
+    const fetchLocationDetails = async () => {
+      if (!destination) {
+        return null;
+      }
 
-  if (!destination) {
+      if (!destination.location_id) {
+        return null;
+      }
+      const fetchedLocation = await getLocationById(destination.location_id);
+      setLocation(fetchedLocation);
+    };
+
+    if (destination) {
+      fetchLocationDetails();
+    }
+  }, [destination, getLocationById]);
+
+  if (!destination || !location) {
     return (
       <Typography variant="h4" align="center">
         Loading...
@@ -80,10 +101,10 @@ export function Destination() {
               {destination.name}
             </Typography>
             <Typography variant="body1" sx={{ mb: 2 }}>
-              {"Location:  " + destination.location}
+              {"Location:  " + location.name}
             </Typography>
             <Typography variant="body1" sx={{ mb: 2 }}>
-              {"Country:  " + destination.country}
+              {"Country:  " + location.country}
             </Typography>
             <Typography variant="body1" sx={{ mb: 2 }}>
               {"Visitors last year:  " + destination.visitors_last_year}

@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"gorm.io/gorm"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -20,10 +21,21 @@ func TestAllDestinations_Success(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
 
+	_ = &mocks.MockLocationService{
+		LocationByIDFunc: func(idStr string) (*entities.Location, error) {
+			return &entities.Location{
+				Model:       gorm.Model{ID: 1},
+				Name:        "Finnish Lapland",
+				Country:     "Finland",
+				Description: "Beautiful northern landscapes with aurora",
+			}, nil
+		},
+	}
+
 	mockService := &mocks.MockDestinationService{
 		AllDestinationsFunc: func() ([]entities.Destination, error) {
 			return []entities.Destination{
-				{ID: 1, Name: "Beach Paradise", Location: "Hawaii", Country: "USA"},
+				{Name: "Beach Paradise", LocationID: 1},
 			}, nil
 		},
 	}
@@ -91,7 +103,18 @@ func TestAllDestinations_LargeDataSet(t *testing.T) {
 
 	var largeDestinations []entities.Destination
 	for i := 0; i < 1000; i++ {
-		largeDestinations = append(largeDestinations, entities.Destination{ID: uint(i), Name: fmt.Sprintf("Destination %d", i), Location: "Location", Country: "Country"})
+		largeDestinations = append(largeDestinations, entities.Destination{Name: fmt.Sprintf("Destination %d", i), LocationID: 1})
+	}
+
+	_ = &mocks.MockLocationService{
+		LocationByIDFunc: func(idStr string) (*entities.Location, error) {
+			return &entities.Location{
+				Model:       gorm.Model{ID: 1},
+				Name:        "Finnish Lapland",
+				Country:     "Finland",
+				Description: "Beautiful northern landscapes with aurora",
+			}, nil
+		},
 	}
 
 	mockService := &mocks.MockDestinationService{
