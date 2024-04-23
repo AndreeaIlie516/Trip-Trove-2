@@ -21,8 +21,17 @@ export function Destination() {
       if (!id) {
         return null;
       }
-      const fetchedDestination = await getDestinationById(parseInt(id));
-      console.log("!!!Destination!!!: " + fetchedDestination?.description);
+      let fetchedDestination;
+      if (navigator.onLine) {
+        fetchedDestination = await getDestinationById(parseInt(id));
+      } else {
+        const storedDestinations = JSON.parse(
+          localStorage.getItem("destinations") || "[]"
+        );
+        fetchedDestination = storedDestinations.find(
+          (d: IDestination) => d.ID === parseInt(id)
+        );
+      }
       setDestination(fetchedDestination);
     };
     fetchDestinationDetails();

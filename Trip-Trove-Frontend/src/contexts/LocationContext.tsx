@@ -6,7 +6,9 @@ import {
 import { ILocation } from "../interfaces/Location";
 import baseUrl from "../consts";
 
-export const LocationContext = createContext<ILocationContext | undefined>(undefined);
+export const LocationContext = createContext<ILocationContext | undefined>(
+  undefined
+);
 const locationUrl = `${baseUrl}/locations`;
 
 export function useLocations() {
@@ -46,20 +48,22 @@ export const LocationProvider: React.FC<ILocationProviderProps> = ({
   };
 
   useEffect(() => {
+    const handleNetworkChange = () => {
+      const onlineStatus = navigator.onLine;
+      setIsOnline(onlineStatus);
+      if (onlineStatus) {
+        fetchLocations();
+      } else {
+        loadLocationsFromLocalStorage();
+      }
+    };
+
     if (navigator.onLine) {
       fetchLocations();
     } else {
       loadLocationsFromLocalStorage();
     }
 
-    const handleNetworkChange = () => {
-      const onlineStatus = navigator.onLine;
-      setIsOnline(onlineStatus);
-      if (onlineStatus) {
-        fetchLocations();
-      }
-    };
-    
     window.addEventListener("online", handleNetworkChange);
     window.addEventListener("offline", handleNetworkChange);
     return () => {
@@ -71,16 +75,28 @@ export const LocationProvider: React.FC<ILocationProviderProps> = ({
   const getLocationById = async (
     id: number
   ): Promise<ILocation | undefined> => {
-    try {
-      const response = await fetch(`${locationUrl}/${id}`);
-      if (!response.ok) {
-        throw new Error("could not find location by id");
+    if (navigator.onLine) {
+      try {
+        const response = await fetch(`${locationUrl}/${id}`);
+        if (!response.ok) {
+          throw new Error("Could not find location by id");
+        }
+        const data = (await response.json()) as ILocation;
+        return data;
+      } catch (error) {
+        console.error("Error fetching location from server:", error);
       }
-      const data = (await response.json()) as ILocation;
-      return data;
-    } catch (err: unknown) {
-      console.log(`error`);
     }
+
+    const localData = localStorage.getItem("locations");
+    if (localData) {
+      const locations = JSON.parse(localData);
+      const location = locations.find((loc: ILocation) => loc.ID === id);
+      return location;
+    }
+
+    console.warn("Location not found in local storage");
+    return undefined;
   };
 
   const addLocation = async (location: ILocation) => {

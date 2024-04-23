@@ -169,9 +169,18 @@ export const DestinationProvider: React.FC<IDestinationProviderProps> = ({
   }, []);
 
   const modifyLocalChanges = (type: string, data: any): void => {
-    const changes = JSON.parse(
+    let changes = JSON.parse(
       localStorage.getItem("destinationChanges") || "[]"
     );
+    if (type === "update") {
+      changes = changes.filter(
+        (change: any) =>
+          !(
+            change.type === "update" &&
+            change.destination.ID === data.destination.ID
+          )
+      );
+    }
     changes.push({ type, ...data });
     localStorage.setItem("destinationChanges", JSON.stringify(changes));
   };
@@ -214,23 +223,32 @@ export const DestinationProvider: React.FC<IDestinationProviderProps> = ({
     id: number
   ): Promise<IDestination | undefined> => {
     console.log("id: " + id);
-    try {
-      const response = await fetch(`${destinationUrl}/${id}`);
-      console.log("response: " + response);
-      if (!response.ok) {
-        throw new Error("could not find destination by id");
+    if (navigator.onLine) {
+      try {
+        const response = await fetch(`${destinationUrl}/${id}`);
+        if (!response.ok) {
+          throw new Error("Server responded with an error");
+        }
+        const fetchedDestination = await response.json();
+        return fetchedDestination;
+      } catch (error) {
+        console.error(`Error fetching destination from server: ${error}`);
+      
       }
-      const jsonResponse = await response.json();
-      console.log("JSON response:", jsonResponse);
-
-      const data = jsonResponse as IDestination;
-
-      console.log("!!Data: " + data.ID);
-
-      return data;
-    } catch (err: unknown) {
-      console.log(`error`);
     }
+
+     const localData = localStorage.getItem("destinations");
+    if (localData) {
+      const destinations = JSON.parse(localData);
+      const destination = destinations.find((d: IDestination) => d.ID === id);
+      if (destination) {
+        console.log("Found destination in local storage:", destination);
+        return destination;
+      }
+    }
+
+    console.warn("Destination not found in local storage");
+    return undefined;
   };
 
   const addDestination = async (
@@ -268,10 +286,8 @@ export const DestinationProvider: React.FC<IDestinationProviderProps> = ({
     const isDeletedOffline = !isOnline || forceSync;
 
     if (isDeletedOffline) {
-      // Add the deletion to local changes for later synchronization
       modifyLocalChanges("delete", { id });
 
-      // Update local state and storage immediately
       updateStateAndStorage(id);
     } else {
       try {
@@ -282,7 +298,7 @@ export const DestinationProvider: React.FC<IDestinationProviderProps> = ({
         updateStateAndStorage(id);
       } catch (error) {
         console.error("Delete error:", error);
-        modifyLocalChanges("delete", { id }); // Fallback if online deletion fails
+        modifyLocalChanges("delete", { id });
         updateStateAndStorage(id);
       }
     }
@@ -306,40 +322,35 @@ export const DestinationProvider: React.FC<IDestinationProviderProps> = ({
     destination: IDestination,
     forceSync: boolean = false
   ) => {
-    if (isOnline && !forceSync) {
+    const updateLocal = () => {
+      setDestinations((prevDestinations) => {
+        const updatedDestinations = prevDestinations.map((d) =>
+          d.ID === destination.ID ? { ...d, ...destination } : d
+        );
+        updateLocalStorage(updatedDestinations);
+        return updatedDestinations;
+      });
+      modifyLocalChanges("update", { destination });
+    };
+
+    if (navigator.onLine && !forceSync) {
       try {
         const response = await fetch(`${destinationUrl}/${destination.ID}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(destination),
         });
-
-        if (!response.ok) {
+        if (response.ok) {
+          updateLocal();
+        } else {
           throw new Error("Failed to update destination");
         }
-        const updatedDestination = await response.json();
-        setDestinations((prev) =>
-          prev.map((d) =>
-            d.ID === updatedDestination.ID ? updatedDestination : d
-          )
-        );
-        updateLocalStorage(
-          destinations.map((d) =>
-            d.ID === updatedDestination.ID ? updatedDestination : d
-          )
-        );
       } catch (error) {
         console.error("Update error:", error);
-        modifyLocalChanges("update", { destination });
+        updateLocal();
       }
     } else {
-      modifyLocalChanges("update", { destination });
-      setDestinations((prev) =>
-        prev.map((d) => (d.ID === destination.ID ? destination : d))
-      );
-      updateLocalStorage(
-        destinations.map((d) => (d.ID === destination.ID ? destination : d))
-      );
+      updateLocal();
     }
   };
 

@@ -39,7 +39,7 @@ export function UpdateDestination() {
     if (!destination) {
       return;
     }
-    updateDestination(destination);
+    updateDestination(destination, false);
     navigate("/destinations");
   };
 
