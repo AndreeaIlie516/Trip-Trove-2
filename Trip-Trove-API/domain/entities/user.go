@@ -23,6 +23,7 @@ type LoginRequest struct {
 type LoginResponse struct {
 	Email string `json:"email"`
 	Jwt   string `json:"jwt"`
+	ID    uint   `json:"id"`
 }
 
 type AccessType uint8

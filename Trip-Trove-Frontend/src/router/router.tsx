@@ -8,6 +8,9 @@ import { AllLocations } from "../pages/AllLocations";
 import { AddLocation } from "../components/AddLocation";
 import { LocationDetails } from "../pages/Location";
 import { UpdateLocation } from "../components/UpdateLocation";
+import { Login } from "../components/Login";
+import { Register } from "../components/Register";
+import { UserProfile } from "../components/UserProfile";
 
 const routes = createBrowserRouter([
   {
@@ -45,6 +48,18 @@ const routes = createBrowserRouter([
   {
     path: "/locations/update/:id",
     Component: UpdateLocation,
+  },
+  {
+    path: "/login",
+    Component: Login,
+  },
+  {
+    path: "/register",
+    Component: Register,
+  },
+  {
+    path: "/account",
+    Component: UserProfile,
   },
 ]);
 export default function RoutesProvider() {

@@ -68,6 +68,8 @@ func (handler *UserHandler) Register(c *gin.Context) {
 		"passwordValidator": utils.PasswordValidator,
 	}
 
+	print("Aici")
+
 	for validatorName, validatorFunction := range validators {
 		if err := validate.RegisterValidation(validatorName, validatorFunction); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to register validator: " + validatorName})

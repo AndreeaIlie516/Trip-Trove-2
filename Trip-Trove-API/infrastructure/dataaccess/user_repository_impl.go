@@ -87,6 +87,7 @@ func (r *GormUserRepository) Login(loginData entities.LoginRequest) (entities.Lo
 	data := entities.LoginResponse{
 		Email: user.Email,
 		Jwt:   signedToken,
+		ID:    user.ID,
 	}
 
 	return data, nil

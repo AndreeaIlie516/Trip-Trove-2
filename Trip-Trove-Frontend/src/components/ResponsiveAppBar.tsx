@@ -10,20 +10,21 @@ import {
   Avatar,
   Button,
   MenuItem,
+  Modal,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import logo from "../assets/logo.png";
 import { useNavigate } from "react-router-dom";
+import { Login } from "./Login";
+import { useAuth } from "../contexts/AuthContext";
 
 export const ResponsiveAppBar: React.FC = () => {
-  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
-    null
-  );
-  const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(
-    null
-  );
+  const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
+  const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
+  const [openLoginModal, setOpenLoginModal] = useState(false);
 
   const navigate = useNavigate();
+  const { user, isLoggedIn, logout } = useAuth();
 
   let pages: string[] = ["Destinations", "Locations"];
 
@@ -43,13 +44,26 @@ export const ResponsiveAppBar: React.FC = () => {
   };
 
   const handleNavigate = (page: string) => {
-    if (page == "Destinations") 
-      navigate("/")
-    else {
-      if (page == "Locations")
-        navigate("/locations")
+    if (page === "Destinations") {
+      navigate("/");
+    } else if (page === "Locations") {
+      navigate("/locations");
+    } else if (page === "Login") {
+      navigate("/login");
+    } else if (page === "Register") {
+      navigate("/register");
+    } else if (page === "My Account") {
+      navigate("/account");
     }
     handleCloseNavMenu();
+  };
+
+  const handleOpenLoginModal = () => {
+    setOpenLoginModal(true);
+  };
+
+  const handleCloseLoginModal = () => {
+    setOpenLoginModal(false);
   };
 
   return (
@@ -136,20 +150,60 @@ export const ResponsiveAppBar: React.FC = () => {
             ))}
           </Box>
 
-          <Box
-            sx={{
-              display: { xs: "none", md: "flex" },
-              marginRight: { md: "12em" },
-              width: "65px",
-              height: "65px",
-            }}
-          >
-            <Button color="inherit" sx={{ marginRight: "3em" }}>
-              Log In
-            </Button>
+          {isLoggedIn ? (
+            <Box
+              sx={{
+                display: { xs: "none", md: "flex" },
+                marginRight: { md: "3em" },
+                width: "400px",
+                height: "65px",
+              }}
+            >
+              <Typography sx={{ marginRight: "1em" , marginTop: "1.2em"}}>
+                Welcome, {user?.first_name}
+              </Typography>
+              <Button
+                color="inherit"
+                onClick={() => handleNavigate("My Account")}
+              >
+                My Account
+              </Button>
+              <Button
+                color="inherit"
+                onClick={() => {
+                  logout();
+                  navigate("/");
+                }}
+              >
+                Log Out
+              </Button>
+            </Box>
+          ) : (
+            <Box
+              sx={{
+                display: { xs: "none", md: "flex" },
+                marginRight: { md: "12em" },
+                width: "65px",
+                height: "65px",
+              }}
+            >
+              <Button
+                color="inherit"
+                sx={{ marginRight: "3em" }}
+                onClick={() => handleNavigate("Login")}
+              >
+                Log In
+              </Button>
 
-            <Button color="inherit">Register</Button>
-          </Box>
+              <Button
+                color="inherit"
+                sx={{ marginRight: "3em" }}
+                onClick={() => handleNavigate("Register")}
+              >
+                Register
+              </Button>
+            </Box>
+          )}
         </Toolbar>
       </Container>
     </AppBar>
